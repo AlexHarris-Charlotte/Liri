@@ -5,7 +5,9 @@
   "main": "index.js",
   "dependencies": {
     "dotenv": "^5.0.0",
+    "inquirer": "^5.1.0",
     "node-spotify-api": "^1.0.7",
+    "prompt": "^1.0.0",
     "request": "^2.83.0",
     "twitter": "^1.7.1"
   },

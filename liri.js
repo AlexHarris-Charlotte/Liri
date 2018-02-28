@@ -4,21 +4,50 @@ const Twitter = require('twitter');
 const Spotify = require('node-spotify-api');
 const request = require("request");
 const fs = require("fs");
+const inquirer = require('inquirer');
 
-var spotify = new Spotify(keys.spotify);
-var client = new Twitter(keys.twitter);
-
-// Liri Commands
-// * `my-tweets`
-
-// * `spotify-this-song`
-
-// * `movie-this`
+const spotify = new Spotify(keys.spotify);
+const client = new Twitter(keys.twitter);
 
 // * `do-what-it-says`
 
-const operation = process.argv[2];
-const nameInput = process.argv[3];
+
+(function askUser(){ inquirer.prompt([
+        {
+            type: "list",
+            name: "userOption",
+            message: "What option do you wish to select?",
+            choices: ["Movie", "Song", "Tweets"],
+        }
+
+    ]).then(answers => {
+        const userMediaChoice = answers.userOption;
+        if (answers.userOption === "Movie") {
+            userMediaInput(userMediaChoice);
+        } else if (answers.userOption === "Song"){
+            userMediaInput(userMediaChoice);
+        } else if (answers.userOption === "Tweets") {
+            tweets();
+        }
+    });
+})();
+
+
+function userMediaInput (media) {
+    inquirer.prompt([
+        {
+            type: "input",
+            name: "mediaChoice",
+            message: `What ${media} do you wish to search for?`
+        }
+    ]).then(answers => {
+        if (media === "Movie") {
+            movieFinder(answers.mediaChoice);
+        } else if (media === "Song") {
+            spotifyCall(answers.mediaChoice);
+        }
+    })
+}
 
 
 
@@ -31,16 +60,20 @@ function tweets() {
     })
 }
 
+
+
 function spotifyCall(nameInput){
-    console.log(process.argv);
-    spotify.search({ type: 'track', query: nameInput, limit: '1' }, function(err, data) {
+    spotify.search({ type: 'track', query: nameInput}, function(err, data) {
         if (err) {
-          return console.log('Error occurred: ' + err);
+          return console.log('PURPLE PICKELED PEPPERS Error occurred: ' + err);
         }
-      console.log("Song Name: " + data.tracks.items[0].name);
-      console.log("Artist Name: " + data.tracks.items[0].album.artists[0].name);
-      console.log("Album Name: " + data.tracks.items[0].album.name);
-      console.log("URL link to the album on Spotify: " + data.tracks.items[0].external_urls.spotify);
+        for(var i = 0; i < 10; i++) {
+            console.log(i);
+            console.log("Song Name: " + data.tracks.items[i].name);
+            console.log("Artist Name: " + data.tracks.items[i].album.artists[i].name);
+            console.log("Album Name: " + data.tracks.items[i].album.name);
+            console.log("URL link to the album on Spotify: " + data.tracks.items[i].external_urls.spotify); 
+        }
       });
 }
 
@@ -60,17 +93,5 @@ function movieFinder(nameInput) {
     })
 };
 
-// Using == because we don't have to worry about data type. process.argv only returns strings
-if(operation == "my-tweets") {
-    tweets();
-} else if(operation == "spotify-this-song" && nameInput != undefined) {
-    spotifyCall(nameInput);
-} else if(operation == "movie-this" && nameInput != undefined) {
-    movieFinder(nameInput); 
-} else if(operation == "do-what-it-says") {
-    // Some Function here
-} else {
-    console.log("Invalid parameters passed when initiating application!");
-}
 
 
