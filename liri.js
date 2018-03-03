@@ -12,7 +12,14 @@ const client = new Twitter(keys.twitter);
 // * `do-what-it-says`
 
 
-(function askUser(){ inquirer.prompt([
+
+askUser();
+
+
+
+
+
+function askUser(){ inquirer.prompt([
         {
             type: "list",
             name: "userOption",
@@ -30,7 +37,8 @@ const client = new Twitter(keys.twitter);
             tweets();
         }
     });
-})();
+};
+
 
 
 function userMediaInput (media) {
@@ -53,7 +61,10 @@ function userMediaInput (media) {
 
 function tweets() {
     client.get("statuses/home_timeline", function(error, tweets, response) {
-        if(error) throw error;
+        if(error) {
+            console.log('An Error has occurred. Reverting to Previous State: ' + err);
+            return askUser();
+        };
         for(var i = 0; i < tweets.length; i++) {
             console.log(tweets[i].user.name + ": ", tweets[i].text);
         }
@@ -65,7 +76,8 @@ function tweets() {
 function spotifyCall(nameInput){
     spotify.search({ type: 'track', query: nameInput}, function(err, data) {
         if (err) {
-          return console.log('PURPLE PICKELED PEPPERS Error occurred: ' + err);
+            console.log('An Error has occurred. Reverting to Previous State: ' + err);
+            return askUser();
         }
         for(var i = 0; i < 10; i++) {
             console.log(i);
@@ -80,6 +92,10 @@ function spotifyCall(nameInput){
 function movieFinder(nameInput) {
     let queryUrl = "https://www.omdbapi.com/?t=" + nameInput + "&y=&plot=short&apikey=trilogy";
     request(queryUrl, function(error, response, body) {
+        if (JSON.parse(body).Title === undefined) {
+            console.log('An Error has occurred. Reverting to Previous State:');
+            return askUser();
+        }
         if (!error && response.statusCode === 200) {
             console.log("The movie's Name is: " + JSON.parse(body).Title);
             console.log("The movie's release Year is: " + JSON.parse(body).Year);
