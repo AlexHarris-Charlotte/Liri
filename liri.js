@@ -9,7 +9,6 @@ const inquirer = require('inquirer');
 const spotify = new Spotify(keys.spotify);
 const client = new Twitter(keys.twitter);
 
-// * `do-what-it-says`
 
 
 
@@ -18,26 +17,46 @@ askUser();
 
 
 
-
-function askUser(){ inquirer.prompt([
+function askUser() { inquirer.prompt([
         {
             type: "list",
             name: "userOption",
             message: "What option do you wish to select?",
-            choices: ["Movie", "Song", "Tweets"],
+            choices: ["Movie", "Song", "Tweets", "Do-What-It-Says"]
         }
 
     ]).then(answers => {
         const userMediaChoice = answers.userOption;
         if (answers.userOption === "Movie") {
             userMediaInput(userMediaChoice);
-        } else if (answers.userOption === "Song"){
+        } else if (answers.userOption === "Song") {
             userMediaInput(userMediaChoice);
         } else if (answers.userOption === "Tweets") {
             tweets();
+        } else if (answers.userOption === "Do-What-It-Says") {
+            whatItSays();
         }
+        
+
     });
 };
+
+
+
+function applicationRepeat() {inquirer.prompt([
+        {
+            type: "confirm",
+            name: "confirm",
+            message: "Would you like to reuse the application?"
+        }
+
+    ]).then(answers => {
+        const choice = answers.confirm;
+        if (choice) {
+            askUser();
+        } 
+    });
+}
 
 
 
@@ -68,6 +87,7 @@ function tweets() {
         for(var i = 0; i < tweets.length; i++) {
             console.log(tweets[i].user.name + ": ", tweets[i].text);
         }
+        applicationRepeat();
     })
 }
 
@@ -79,13 +99,12 @@ function spotifyCall(nameInput){
             console.log('An Error has occurred. Reverting to Previous State: ' + err);
             return askUser();
         }
-        for(var i = 0; i < 10; i++) {
-            console.log(i);
+            var i = 0;
             console.log("Song Name: " + data.tracks.items[i].name);
             console.log("Artist Name: " + data.tracks.items[i].album.artists[i].name);
             console.log("Album Name: " + data.tracks.items[i].album.name);
             console.log("URL link to the album on Spotify: " + data.tracks.items[i].external_urls.spotify); 
-        }
+        applicationRepeat();
       });
 }
 
@@ -106,8 +125,24 @@ function movieFinder(nameInput) {
             console.log("The movie's plot: " + JSON.parse(body).Plot);
             console.log("Some of the Actors involved: " + JSON.parse(body).Actors);
         }
+        applicationRepeat();
     })
 };
+
+function whatItSays () {
+    fs.readFile('./random.txt', 'utf8', (err, data) => {
+        if (err) throw err;
+        [method, media] = data.split(',');
+        switch(method) {
+            case('spotify-this-song'):
+                spotifyCall(media);
+                break;
+            case('movie-this'):
+                movieFinder(media);
+                break;
+        }
+      });
+}
 
 
 
